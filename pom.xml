@@ -143,10 +143,11 @@
 		</repository>
 	</repositories>
 	<dependencies>
-		<!-- Declared before s3 on purpose. Everything Fess ships arrives here as a provided
-		     transitive dependency, and a provided node beats a compile node of the same artifact at
-		     the same depth by declaration order, so the shade below picks up only what the war does
-		     not already carry. -->
+		<!-- Declared before s3 on purpose: Fess's own dependencies then arrive as
+		     provided transitive nodes, and most of what the war carries is therefore left out of
+		     the shade. Ordering does not settle every case: where the two paths disagree Maven
+		     keeps one node and widens its scope, and those arrive at compile or runtime instead.
+		     That is what the exclude list above is for. -->
 		<dependency>
 			<groupId>org.codelibs.fess</groupId>
 			<artifactId>fess</artifactId>
