@@ -58,7 +58,7 @@
 							     Relocating would leave them with nothing to bind to. -->
 							<artifactSet>
 								<!-- What the war already carries. Declaring org.codelibs.fess:fess as provided
-								     does not keep these four out on its own: when Fess and the SDK need the same
+								     does not keep these three out on its own: when Fess and the SDK need the same
 								     artifact, Maven keeps Fess's version but widens the scope to the widest of
 								     the two, so the node arrives at compile or runtime instead of provided and
 								     would be shaded.
@@ -71,13 +71,13 @@
 								     to what the war had before the split.
 								     Under-excluding wastes space; over-excluding fails at run time with
 								     NoClassDefFoundError, so verify against `mvn dependency:list` on Fess before
-								     adding an entry. slf4j-api and httpclient5 are direct dependencies of Fess
-								     and reactive-streams arrives there with OpenSearch, so none of the three
-								     leaves the war together with the SDK. -->
+								     adding an entry. slf4j-api and httpclient5 are direct dependencies of Fess,
+								     so neither leaves the war together with the SDK. reactive-streams is not on
+								     the list: it used to reach the war through the opensearch jar, which Fess
+								     stopped shipping in 15.9, so the SDK's copy has to travel in this jar. -->
 								<excludes>
 									<exclude>org.apache.httpcomponents.client5:*</exclude>
 									<exclude>org.apache.httpcomponents.core5:*</exclude>
-									<exclude>org.reactivestreams:*</exclude>
 									<exclude>org.slf4j:*</exclude>
 								</excludes>
 							</artifactSet>
