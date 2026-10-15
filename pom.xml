@@ -4,13 +4,13 @@
 	<artifactId>fess-storage-s3</artifactId>
 	<packaging>jar</packaging>
 	<name>S3 Storage Plugin</name>
-	<version>15.9.0</version>
+	<version>15.9.1-SNAPSHOT</version>
 	<description>Amazon S3 and S3-compatible storage support for Fess: the storage client behind storage.type=s3 and the crawler client behind s3: URLs.</description>
 	<scm>
 		<connection>scm:git:git@github.com:codelibs/fess-storage-s3.git</connection>
 		<developerConnection>scm:git:git@github.com:codelibs/fess-storage-s3.git</developerConnection>
 		<url>https://github.com/codelibs/fess-storage-s3</url>
-		<tag>fess-storage-s3-15.9.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<parent>
 		<groupId>org.codelibs.fess</groupId>
