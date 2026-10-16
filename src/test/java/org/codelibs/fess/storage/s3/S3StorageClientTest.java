@@ -17,6 +17,7 @@ package org.codelibs.fess.storage.s3;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -62,11 +63,20 @@ public class S3StorageClientTest {
         }
     }
 
-    /** Listing and the two probes swallow failures instead, because the admin UI calls them to render. */
+    /** A failed listing must not read as an empty bucket: the caller has to be able to tell the two apart. */
+    @Test
+    public void test_listObjectsFailureBecomesStorageException() {
+        try (S3StorageClient client = new S3StorageClient()) {
+            final StorageException e = assertThrows(StorageException.class, () -> client.listObjects("prefix", 100));
+            assertTrue(e.getMessage().contains("prefix"), e.getMessage());
+            assertNotNull(e.getCause());
+        }
+    }
+
+    /** The two probes swallow failures instead, because the admin UI calls them to render. */
     @Test
     public void test_probesSwallowFailures() {
         try (S3StorageClient client = new S3StorageClient()) {
-            assertTrue(client.listObjects("prefix", 100).isEmpty());
             assertFalse(client.isAvailable());
             assertDoesNotThrow(client::ensureBucketExists);
         }
