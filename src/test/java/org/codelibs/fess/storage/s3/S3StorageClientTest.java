@@ -16,6 +16,7 @@
 package org.codelibs.fess.storage.s3;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,11 +24,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.codelibs.fess.exception.StorageException;
 import org.junit.jupiter.api.Test;
+
+import com.sun.net.httpserver.HttpServer;
+
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 
 public class S3StorageClientTest {
 
@@ -70,6 +79,32 @@ public class S3StorageClientTest {
             final StorageException e = assertThrows(StorageException.class, () -> client.listObjects("prefix", 100));
             assertTrue(e.getMessage().contains("prefix"), e.getMessage());
             assertNotNull(e.getCause());
+        }
+    }
+
+    /** A bucket that does not exist is a failure too, and the message names the bucket rather than the listing. */
+    @Test
+    public void test_listObjectsMissingBucketBecomesStorageException() throws IOException {
+        final HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        server.createContext("/", exchange -> {
+            final byte[] body = ("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Error><Code>NoSuchBucket</Code>"
+                    + "<Message>The specified bucket does not exist</Message><BucketName>fess</BucketName></Error>")
+                            .getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/xml");
+            exchange.sendResponseHeaders(404, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+        server.start();
+        try {
+            final String endpoint = "http://127.0.0.1:" + server.getAddress().getPort();
+            try (S3StorageClient client = new S3StorageClient(endpoint, "accessKey", "secretKey", "fess", "us-east-1")) {
+                final StorageException e = assertThrows(StorageException.class, () -> client.listObjects(null, 100));
+                assertEquals("Bucket does not exist: fess", e.getMessage());
+                assertTrue(e.getCause() instanceof NoSuchBucketException, String.valueOf(e.getCause()));
+            }
+        } finally {
+            server.stop(0);
         }
     }
 

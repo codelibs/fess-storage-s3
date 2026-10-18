@@ -158,8 +158,8 @@ public class S3StorageClient implements StorageClient {
     /**
      * {@inheritDoc}
      *
-     * @throws StorageException if the listing fails, so that an unreachable endpoint is not
-     *         mistaken for an empty bucket
+     * @throws StorageException if the listing fails, so that an unreachable endpoint or a missing
+     *         bucket is not mistaken for an empty bucket
      */
     @Override
     public List<StorageItem> listObjects(final String prefix, final int maxItems) {
@@ -196,7 +196,7 @@ public class S3StorageClient implements StorageClient {
                 }
             }
         } catch (final NoSuchBucketException e) {
-            logger.info("Bucket does not exist: {}", bucket);
+            throw new StorageException("Bucket does not exist: " + bucket, e);
         } catch (final Exception e) {
             throw new StorageException("Failed to list objects in bucket " + bucket + " (prefix: " + prefix + ")", e);
         }
