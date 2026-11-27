@@ -29,8 +29,11 @@ contributes are read when the DI container is built.
 
 ### Object storage
 
-Set these in the admin general page, or pass them to the JVM as
-`-Dfess.system.storage.type=...`:
+Set these in the admin general page, or, with Fess 15.10 or later, as environment variables named
+after the key: `FESS_SYSTEM_` followed by the key in upper case, with every character other than a
+letter or a digit replaced by `_` (`storage.secretkey` is `FESS_SYSTEM_STORAGE_SECRETKEY`). They can
+also be passed to the JVM as `-Dfess.system.storage.type=...`. A value saved in the admin general
+page wins, then a non-empty `-D` option, then the variable:
 
 | Key | Value |
 | --- | --- |
@@ -44,6 +47,11 @@ Set these in the admin general page, or pass them to the JVM as
 `auto` reads `storage.endpoint`: a blank endpoint or an Amazon one resolves to `s3`, anything
 else to `s3_compat`. Both are served by the same client, so the distinction only matters when
 `storage.type` is set by hand.
+
+Give the secret key as `FESS_SYSTEM_STORAGE_SECRETKEY` rather than as a `-D` option. A JVM option
+shows up in the process list, and Fess repeats every `-Dfess.system.*` option on the command line
+of the crawler, suggest, thumbnail and chunk processes it starts, so Fess logs a warning at startup
+when the secret key is given that way.
 
 ### Crawling a bucket
 
